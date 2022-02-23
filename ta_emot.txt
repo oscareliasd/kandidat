@@ -1,0 +1,118 @@
+Ska in i den svarta
+
+#include <Arduino.h>
+#include <WiFi.h>
+#include <esp_now.h>
+ 
+const char* ssid = "TEST";
+const char* pass = "123456789";
+ 
+WiFiServer server(23);
+WiFiClient client;
+uint8_t broadcastAdress[] = {0X7C,0X9E,0XBD,0X61,0X58,0XF4};
+String success;
+ 
+//MAC adress till andra ESPn med kondensatorn: 0x7C,0x9E,0xBD,0x60,0xD1,0x8C
+// MAC till den svarta: 0x94,0xB9,0x7E,0xE4,0x84,0x34
+// MAC till den vita: 0X7C,0X9E,0XBD,0X61,0X58,0XF4
+ 
+typedef struct struct_message{
+  int test1;
+  int test2;
+  int test3;
+  int test4;
+  int test5;
+  int test6;
+  int test7;
+  int test8;
+  int test9;
+  int test10;
+  int test11;
+  int test12;
+  int test13;
+  int test14;
+  int test15;
+}struct_message;
+ 
+struct_message test;
+struct_message incomingCall;
+
+int rcvINT;
+String rcvMESSAGE;
+
+// Callback when data is sent
+void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+  Serial.print("\r\nLast Packet Send Status:\t");
+  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+  if (status ==0){
+    success = "Delivery Success :)";
+  }
+  else{
+    success = "Delivery Fail :(";
+  }
+}
+
+
+// Callback when data is received
+void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+  memcpy(&incomingCall, incomingData, sizeof(incomingCall));
+  Serial.print("Bytes received: ");
+  Serial.println(len);
+
+  Serial.println("Values: ");
+  Serial.println(incomingCall.test1);
+  Serial.println(incomingCall.test2);
+  Serial.println(incomingCall.test3);
+  Serial.println(incomingCall.test4);
+  Serial.println(incomingCall.test5);
+  Serial.println(incomingCall.test6);
+  Serial.println(incomingCall.test7);
+  Serial.println(incomingCall.test8);
+  Serial.println(incomingCall.test9);
+  Serial.println(incomingCall.test10);
+  Serial.println(incomingCall.test11);
+  Serial.println(incomingCall.test12);
+  Serial.println(incomingCall.test13);
+  Serial.println(incomingCall.test14);
+  Serial.println(incomingCall.test15);
+
+}
+ 
+void getMACAdress(){
+  WiFi.mode(WIFI_MODE_STA);
+  Serial.println(WiFi.macAddress());
+}
+ 
+ 
+void setup() {
+  Serial.begin(115200);
+  delay(100);
+  WiFi.mode(WIFI_STA);
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error initializing ESP-NOW");
+    return;
+  }
+ 
+  esp_now_register_send_cb(OnDataSent);
+ 
+  esp_now_peer_info_t peerInfo;
+  memcpy(peerInfo.peer_addr, broadcastAdress, 6);
+  peerInfo.channel = 0;  
+  peerInfo.encrypt = false;
+ 
+  if (esp_now_add_peer(&peerInfo) != ESP_OK){
+    Serial.println("Failed to add peer");
+    return;
+  }
+  esp_now_register_recv_cb(OnDataRecv);
+ 
+}
+ 
+void getMessage(){
+ 
+}
+ 
+void loop() {
+  //esp_err_t result = esp_now_send(broadcastAdress, (uint8_t *) &test, sizeof(test));
+  //delay(10);
+}
